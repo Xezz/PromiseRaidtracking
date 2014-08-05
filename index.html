@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <title>Promise attendance list</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="//netdna.bootstrapcdn.com/bootswatch/3.1.1/slate/bootstrap.min.css" rel="stylesheet">
+    <script type="application/javascript" src="js/tabletop.js"></script>
+    <script type="application/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+    <table id="targettable" class="table">
+        <thead><tr><th>Player</th><th>Points</th><th>%age</th></tr></thead>
+    </table>
+
+
+
+<script type="application/javascript">
+    $(document).ready(function() {
+        var URL = "0Ail_mPTHgqAadDVOSGtvS0ZPbTZiWTlTa0VPRm1sZWc";
+        //
+        //URL = "1fsF9vFExDqXFPOq6D0KyRN8VBaBFc3KHW-iOPzRX-Ag";
+        //URL = "1c0xVHnjt1TtwT-8BbIXE2w25qCU-DED937DKChOuwYw";
+        var raidData = Tabletop.init({ key: URL, callback: myData, wanted: ['players', '2014-08'], parseNumbers: true});
+    });
+    function myData(gData) {
+
+        var players = gData['players'];
+        var august = gData['2014-08'];
+        console.log(august);
+        var html = "";
+        var length = players.elements['length'];
+        var max_amount = 0;
+        var official_base_value = 5;
+        for (var officials_index = 0; officials_index < august.elements['length']; officials_index++) {
+            if (august.elements[officials_index]['isofficial'] !== undefined
+                    &&  august.elements[officials_index]['factor'] !== undefined
+                    && august.elements[officials_index]['isofficial'].toLowerCase() === "true") {
+                max_amount += august.elements[officials_index]['factor'] * official_base_value;
+            }
+        }
+        for (var i = 0; i < length; i++) {
+            var playername = players.elements[i].playername;
+            var factored_points = 0;
+            for (var j = 0; j < august.elements['length']; j++) {
+                factored_points += august.elements[j][playername.toLowerCase()] * august.elements[j]['factor'];
+            }
+            if (max_amount !== 0)
+                var officila_raid_percentage = 100 * factored_points / max_amount;
+            else
+                officila_raid_percentage = "no official raids";
+            html += "<tr>"+ "<td>" + playername + "</td>" + "<td>" + factored_points + "</td>" + "<td>" + officila_raid_percentage + "</td>" + "</tr>"
+        }
+
+        //Sheetsee.makeTable(tableOptions);
+        //Sheetsee.initiateTableFilter(tableOptions);
+        //var html = Sheetsee.ich.placeholder({'rows': gData});
+
+        $('#targettable').append(html);
+    }
+</script>
+</body>
+</html>
