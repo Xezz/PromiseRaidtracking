@@ -11,19 +11,26 @@
 
 </head>
 <body>
-    <table id="targettable" class="table">
-        <thead><tr><th>Player</th><th>Points</th><th>%age</th></tr></thead>
-    </table>
-
-
-
+    <div class="container">
+        <div class="row">
+            <h1 class="cold-md-12 text-center">&lt;Promise&gt; Attendance Live Show</h1>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <table id="targettable" class="table">
+                    <thead><tr><th>Player</th><th>Points</th><th>%age</th></tr></thead>
+                </table>
+            </div>
+            <div class="col-md-4">side-area</div>
+        </div>
+    </div>
 <script type="application/javascript">
     $(document).ready(function() {
         var URL = "0Ail_mPTHgqAadDVOSGtvS0ZPbTZiWTlTa0VPRm1sZWc";
         //
         //URL = "1fsF9vFExDqXFPOq6D0KyRN8VBaBFc3KHW-iOPzRX-Ag";
         //URL = "1c0xVHnjt1TtwT-8BbIXE2w25qCU-DED937DKChOuwYw";
-        var raidData = Tabletop.init({ key: URL, callback: myData, wanted: ['players', '2014-08'], parseNumbers: true});
+        Tabletop.init({ key: URL, callback: myData, wanted: ['players', '2014-08'], parseNumbers: true});
     });
     function myData(gData) {
 
