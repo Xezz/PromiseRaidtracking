@@ -8,10 +8,13 @@
     <script type="application/javascript" src="js/tabletop.js"></script>
     <script type="application/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script language="javascript" type="text/javascript" src="js/jquery.jqplot.min.js"></script>
+    <script type="text/javascript" src="js/plugins/jqplot.pieRenderer.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/jquery.jqplot.min.css" />
 
 </head>
 <body>
-    <div class="container">
+    <div class="container-fluid">
         <div class="row">
             <h1 class="cold-md-12 text-center">&lt;Promise&gt; Attendance Live Show</h1>
         </div>
@@ -21,7 +24,7 @@
                     <thead><tr><th>Player</th><th>Points</th><th>%age</th></tr></thead>
                 </table>
             </div>
-            <div class="col-md-4">side-area</div>
+            <div class="col-md-4" id="chart2" style="min-height: 500px"></div>
         </div>
     </div>
 <script type="application/javascript">
@@ -41,31 +44,55 @@
         var length = players.elements['length'];
         var max_amount = 0;
         var official_base_value = 5;
+        var sum_of_all = 0;
+        var per_player = [];
         for (var officials_index = 0; officials_index < august.elements['length']; officials_index++) {
+            // should there be an official raid with a real factor then add this
             if (august.elements[officials_index]['isofficial'] !== undefined
                     &&  august.elements[officials_index]['factor'] !== undefined
                     && august.elements[officials_index]['isofficial'].toLowerCase() === "true") {
                 max_amount += august.elements[officials_index]['factor'] * official_base_value;
             }
         }
+        var raid_data = [];
         for (var i = 0; i < length; i++) {
-            var playername = players.elements[i].playername;
+            var player_name = players.elements[i].playername;
             var factored_points = 0;
             for (var j = 0; j < august.elements['length']; j++) {
-                factored_points += august.elements[j][playername.toLowerCase()] * august.elements[j]['factor'];
+                factored_points += august.elements[j][player_name.toLowerCase()] * august.elements[j]['factor'];
             }
-            if (max_amount !== 0)
-                var officila_raid_percentage = 100 * factored_points / max_amount;
-            else
-                officila_raid_percentage = "no official raids";
-            html += "<tr>"+ "<td>" + playername + "</td>" + "<td>" + factored_points + "</td>" + "<td>" + officila_raid_percentage + "</td>" + "</tr>"
+            if (max_amount !== 0) {
+                var official_raid_percentage_per_player = 100 * factored_points / max_amount;
+            }
+            else {
+                official_raid_percentage_per_player = "no official raids";
+            }
+            if (factored_points > 0) {
+                raid_data.push([player_name, factored_points]);
+            }
+            html += "<tr>"+ "<td>" + player_name + "</td>" + "<td>" + factored_points + "</td>" + "<td>" + official_raid_percentage_per_player + "</td>" + "</tr>"
         }
-
+        console.log(raid_data);
         //Sheetsee.makeTable(tableOptions);
         //Sheetsee.initiateTableFilter(tableOptions);
         //var html = Sheetsee.ich.placeholder({'rows': gData});
 
         $('#targettable').append(html);
+        var plot2 = jQuery.jqplot ('chart2', [raid_data], {
+            seriesDefaults: {
+                renderer: jQuery.jqplot.PieRenderer,
+                rendererOptions: {
+                    // Turn off filling of slices.
+                    showDataLabels: true,
+                    // Add a margin to seperate the slices.
+                    sliceMargin: 4,
+                    // stroke the slices with a little thicker line.
+                    lineWidth: 5,
+                    diameter: 355
+                }
+            },
+            legend: { show:true, location: 'e' }
+        });
     }
 </script>
 </body>
