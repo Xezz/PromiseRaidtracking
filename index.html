@@ -95,7 +95,7 @@
         var players = gData['players'];
         var august = gData[theValidDate];
         console.log(august);
-        var html = "";
+        var html = "<thead><tr><th>Player</th><th>Points</th><th>%age</th></tr></thead>";
         var length = players.elements['length'];
         var max_amount = 0;
         var official_base_value = 5;
@@ -134,7 +134,7 @@
         //Sheetsee.initiateTableFilter(tableOptions);
         //var html = Sheetsee.ich.placeholder({'rows': gData});
 
-        $('#targettable').append(html);
+        $('#targettable').html(html);
         var plot2 = jQuery.jqplot('chart2', [raid_data], {
             seriesDefaults: {
                 renderer: jQuery.jqplot.PieRenderer,
