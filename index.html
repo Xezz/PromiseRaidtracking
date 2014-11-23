@@ -10,35 +10,90 @@
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
     <script language="javascript" type="text/javascript" src="js/jquery.jqplot.min.js"></script>
     <script type="text/javascript" src="js/plugins/jqplot.pieRenderer.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="css/jquery.jqplot.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/jquery.jqplot.min.css"/>
 
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <h1 class="cold-md-12 text-center">&lt;Promise&gt; Attendance Live Show</h1>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <table id="targettable" class="table">
-                    <thead><tr><th>Player</th><th>Points</th><th>%age</th></tr></thead>
-                </table>
-            </div>
-            <div class="col-md-4" id="chart2" style="min-height: 550px; min-width: 550px"></div>
-        </div>
+<div class="container-fluid">
+    <div class="row">
+        <h1 class="cold-md-12 text-center">&lt;Promise&gt; Attendance Live Show</h1>
+        <form><select id="datefield"></select></form>
     </div>
+    <div class="row">
+        <div class="col-md-6">
+            <table id="targettable" class="table">
+                <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Points</th>
+                    <th>%age</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+        <div class="col-md-4" id="chart2" style="min-height: 550px; min-width: 550px"></div>
+    </div>
+</div>
 <script type="application/javascript">
-    $(document).ready(function() {
-        var URL = "0Ail_mPTHgqAadDVOSGtvS0ZPbTZiWTlTa0VPRm1sZWc";
-        //
-        //URL = "1fsF9vFExDqXFPOq6D0KyRN8VBaBFc3KHW-iOPzRX-Ag";
-        //URL = "1c0xVHnjt1TtwT-8BbIXE2w25qCU-DED937DKChOuwYw";
-        Tabletop.init({ key: URL, callback: myData, wanted: ['players', '2014-08'], parseNumbers: true});
+    var theValidDate = "2014-08";
+    $(document).ready(function () {
+        var selectForm = $('#datefield');
+        initDateSelect(selectForm);
+        selectForm.val(theValidDate);
+        selectForm.change(function () {
+            theValidDate = selectForm.children('option:selected').text();
+            console.log("Got change event: " + theValidDate);
+            pullTableData(theValidDate);
+        }).change();
     });
+
+    function initDateSelect(selectForm) {
+        var startYear = 2014;
+        var startMonth = 8;
+        var endYear = getYear();
+        var endMonth = getMonth();
+        for (var yearCounter = startYear; yearCounter <= endYear; yearCounter++) {
+            for (var monthCounter = startMonth; monthCounter <= 12; monthCounter++) {
+                var selectString = yearCounter.toString() + "-" + stringifyMonth(monthCounter);
+                console.log(selectString);
+                $("<option />", {text: selectString}).appendTo(selectForm);
+                if (yearCounter === endYear && monthCounter === endMonth) {
+                    break;
+                }
+            }
+        }
+    }
+
+    function pullTableData(selectedDate) {
+        var URL = "0Ail_mPTHgqAadDVOSGtvS0ZPbTZiWTlTa0VPRm1sZWc";
+        var ttop = Tabletop.init({
+            key: URL,
+            callback: myData,
+            wanted: ['players', selectedDate],
+            parseNumbers: true
+        });
+        console.log(ttop);
+    }
+    function getMonth(month) {
+        if (month === undefined)
+            month = (new Date()).getMonth() + 1;
+        return month;
+    }
+
+    function stringifyMonth(month) {
+        return (month >= 10) ? month.toString() : "0" + month.toString();
+    }
+
+    function getYear() {
+        var rightNow = new Date();
+        var year = (rightNow).getFullYear();
+        return year;
+    }
+
     function myData(gData) {
 
         var players = gData['players'];
-        var august = gData['2014-08'];
+        var august = gData[theValidDate];
         console.log(august);
         var html = "";
         var length = players.elements['length'];
@@ -49,7 +104,7 @@
         for (var officials_index = 0; officials_index < august.elements['length']; officials_index++) {
             // should there be an official raid with a real factor then add this
             if (august.elements[officials_index]['isofficial'] !== undefined
-                    &&  august.elements[officials_index]['factor'] !== undefined
+                    && august.elements[officials_index]['factor'] !== undefined
                     && august.elements[officials_index]['isofficial'].toLowerCase() === "true") {
                 max_amount += august.elements[officials_index]['factor'] * official_base_value;
             }
@@ -59,7 +114,9 @@
             var player_name = players.elements[i].playername;
             var factored_points = 0;
             for (var j = 0; j < august.elements['length']; j++) {
-                factored_points += august.elements[j][player_name.toLowerCase()] * august.elements[j]['factor'];
+                if (august.elements[j][player_name.toLowerCase()] !== undefined) {
+                    factored_points += august.elements[j][player_name.toLowerCase()] * august.elements[j]['factor'];
+                }
             }
             if (max_amount !== 0) {
                 var official_raid_percentage_per_player = 100 * factored_points / max_amount;
@@ -70,7 +127,7 @@
             if (factored_points > 0) {
                 raid_data.push([player_name, factored_points]);
             }
-            html += "<tr>"+ "<td>" + player_name + "</td>" + "<td>" + factored_points + "</td>" + "<td>" + official_raid_percentage_per_player + "</td>" + "</tr>"
+            html += "<tr>" + "<td>" + player_name + "</td>" + "<td>" + factored_points + "</td>" + "<td>" + official_raid_percentage_per_player + "</td>" + "</tr>"
         }
         console.log(raid_data);
         //Sheetsee.makeTable(tableOptions);
@@ -78,7 +135,7 @@
         //var html = Sheetsee.ich.placeholder({'rows': gData});
 
         $('#targettable').append(html);
-        var plot2 = jQuery.jqplot ('chart2', [raid_data], {
+        var plot2 = jQuery.jqplot('chart2', [raid_data], {
             seriesDefaults: {
                 renderer: jQuery.jqplot.PieRenderer,
                 rendererOptions: {
@@ -91,8 +148,8 @@
                     diameter: 355
                 }
             },
-            legend: { show:true, location: 'e'},
-            grid: { backgroundColor: '#272b30', borderColor: '#272b30'}
+            legend: {show: true, location: 'e'},
+            grid: {backgroundColor: '#272b30', borderColor: '#272b30'}
         });
     }
 </script>
